@@ -21,7 +21,7 @@ fi
 if ! virsh net-info testnetback >/dev/null 2>&1; then
     echo "testnetback  not defined. Defining it..."
     virsh net-define $LOCAL_PLAY/testnet2.xml
-    virsh net-start testnetfront
+    virsh net-start testnetback
 fi
 
 
