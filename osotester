@@ -1,0 +1,141 @@
+#!/bin/bash
+IP=$(virsh net-dhcp-leases  testnetfront | awk '/frontendplugintest/ { print $5 }' | tail -n 1 | awk -F/ '{print $1}')
+IP2=$(virsh net-dhcp-leases  testnetback | awk '/backendplugintest/ { print $5 }' | tail -n 1 | awk -F/ '{print $1}')
+# Certificates
+
+CERT="testerdata/user.crt"
+KEY="testerdata/user.key"
+URL="https://$IP:4000/api/frontend/v1alpha1"
+URL2="https://$IP2:4000/api/backend/v1alpha1"
+
+validate_document_list() {
+    local FILE="$1"
+
+    if [[ ! -f "$FILE" ]]; then
+        echo "File not found: $FILE"
+        return 1
+    fi
+
+    # Check top-level keys
+    if ! jq -e 'has("documents") and has("count")' "$FILE" > /dev/null; then
+        echo "❌ Missing top-level keys 'documents' or 'count'"
+        return 1
+    fi
+
+    # Check that documents is an array and count matches
+    local DOC_COUNT
+    DOC_COUNT=$(jq '.documents | length' "$FILE")
+    local EXPECTED_COUNT
+    EXPECTED_COUNT=$(jq '.count' "$FILE")
+
+    if [[ "$DOC_COUNT" -ne "$EXPECTED_COUNT" ]]; then
+        echo "❌ Count mismatch: documents length=$DOC_COUNT, count=$EXPECTED_COUNT"
+        return 1
+    fi
+
+    # Validate each document
+    local INVALID
+    INVALID=$(jq '[.documents[] | select( (.id|type!="string") or (.content|type!="string") or ((.metadata!=null) and (.metadata|type!="string")) ) ] | length' "$FILE")
+
+    if [[ "$INVALID" -ne 0 ]]; then
+        echo "❌ Some documents are invalid"
+        return 1
+    fi
+
+    echo "✅ Validation passed for $FILE"
+    return 0
+}
+
+validate_component_status_string() {
+    local JSON="$1"
+
+    # Check top-level keys
+    if ! echo "$JSON" | jq -e 'has("status_code") and has("status") and has("errors")' > /dev/null; then
+        echo "❌ Missing top-level keys 'status_code', 'status', or 'errors'"
+        return 1
+    fi
+
+    # Validate types
+    local INVALID
+    INVALID=$(echo "$JSON" | jq '[. as $root | 
+                    select( ($root.status_code|type!="number") or 
+                            ($root.status|type!="string") or 
+                            ($root.errors|type!="array") ) ] | length')
+
+    if [[ "$INVALID" -ne 0 ]]; then
+        echo "❌ Invalid types for status_code, status, or errors"
+        return 1
+    fi
+
+    # Validate each error
+    INVALID=$(echo "$JSON" | jq '[.errors[] | select( (.code|type!="string") or (.message|type!="string") ) ] | length')
+    if [[ "$INVALID" -ne 0 ]]; then
+        echo "❌ Some errors are invalid"
+        return 1
+    fi
+
+    echo "✅ Component Status validation passed"
+    return 0
+}
+
+while true; do
+    echo
+    echo "Choose an option:"
+    echo "f) front plugin status"
+    echo "b) back plugin status"
+    echo "1) FRONT - RETRIEVE tx for preconfirmation queue" 
+    echo "2) ITERATION - INPUT BRIDGE upload" 
+    echo "3) ITERATION - OUTPUT BRIDGE download" 
+    echo "4) FRONT - UPLOAD tx from postconfirmation queue" 
+    echo "0) Exit"
+    read -n 1 -p "> " choice
+    echo
+    case "$choice" in
+        f)
+            STATUS_JSON=$(curl -sk --cert "$CERT" --key "$KEY" "$URL/status")
+	    if validate_component_status_string "$STATUS_JSON"; then
+		    echo "Status endpoint returned valid JSON ✅"
+	    else
+		    echo "Status endpoint returned invalid JSON ❌"
+	    fi
+	    echo $STATUS_JSON | jq
+            ;;
+        b)
+            STATUS_JSON=$(curl -sk --cert "$CERT" --key "$KEY" "$URL2/status")
+	    if validate_component_status_string "$STATUS_JSON"; then
+		    echo "Status endpoint returned valid JSON ✅"
+	    else
+		    echo "Status endpoint returned invalid JSON ❌"
+	    fi
+	    echo $STATUS_JSON | jq
+            ;;
+        1)
+            curl -sk --cert "$CERT" --key "$KEY" -o OSO_pre_queue "$URL/documents "
+	    validate_document_list OSO_pre_queue
+            cat OSO_pre_queue | jq
+            echo
+            ;;
+        2)
+            curl -sk -X POST --cert "$CERT" --key "$KEY" "$URL2/documents" -d@OSO_pre_queue
+            echo "Status $?"
+            ;;
+        3)
+            curl -sk --cert "$CERT" --key "$KEY" -o OSO_post_queue "$URL2/documents"
+            cat OSO_post_queue | jq
+	    validate_document_list OSO_post_queue
+            echo
+            ;;
+        4)
+            curl -sk -X POST --cert "$CERT" --key "$KEY" "$URL/documents" -d@OSO_post_queue
+	    
+            echo "Status $?"
+            ;;
+        0)
+            echo "Exiting..."
+            break
+            ;;
+        *)
+            echo "Invalid option, please type 1, 2, or 3"
+            ;;
+    esac
+done

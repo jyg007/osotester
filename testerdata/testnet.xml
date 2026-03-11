@@ -1,0 +1,10 @@
+<network>
+  <name>testnetfront</name>
+  <forward mode='nat'/>
+  <bridge name='virbr9' stp='on' delay='0'/>
+  <ip address='169.254.9.1' netmask='255.255.255.0'>
+  <dhcp default-lease-time='30' max-lease-time='60'>      
+<range start='169.254.9.10' end='169.254.9.11'/>
+    </dhcp>
+  </ip>
+</network>

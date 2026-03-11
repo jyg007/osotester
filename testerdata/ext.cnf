@@ -1,0 +1,11 @@
+
+[v3_ca]
+basicConstraints=CA:TRUE
+subjectKeyIdentifier=hash
+
+[v3_crt]
+authorityKeyIdentifier=keyid,issuer
+basicConstraints=CA:FALSE
+keyUsage=digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment
+subjectAltName=DNS:localhost,IP:127.0.0.1
+
