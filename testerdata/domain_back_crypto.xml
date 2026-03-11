@@ -1,0 +1,63 @@
+<domain type='kvm'>
+  <name>backendcryptoplugintester</name>
+  <uuid>df5e97aa-6b59-2971-a48b-614f5879f172</uuid>
+  <memory unit='KiB'>4194304</memory>
+  <currentMemory unit='KiB'>4194304</currentMemory>
+  <vcpu placement='static'>2</vcpu>
+  <os>
+    <type arch='s390x' machine='s390-ccw-virtio-rhel9.4.0'>hvm</type>
+    <boot dev='hd'/>
+  </os>
+  <cpu mode='host-model' check='partial'/>
+  <clock offset='utc'/>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>destroy</on_crash>
+  <devices>
+    <emulator>/usr/libexec/qemu-kvm</emulator>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2' iommu='on'/>
+      <source file='/var/lib/libvirt/images/backendplugintester-overlay.qcow2'/>
+      <backingStore type='file'>
+        <format type='qcow2'/>
+        <source file='/var/lib/libvirt/images/oso/hpcr.2.2.3.1'/>
+      </backingStore>
+      <target dev='vda' bus='virtio'/>
+      <address type='ccw' cssid='0xfe' ssid='0x0' devno='0x0000'/>
+    </disk>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='raw' cache='none' io='native' iommu='on'/>
+      <source file='/var/lib/libvirt/images/backendplugintester-cloudinit'/>
+      <target dev='vdc' bus='virtio'/>
+      <readonly/>
+      <address type='ccw' cssid='0xfe' ssid='0x0' devno='0x0002'/>
+    </disk>
+   <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2' iommu='on'/>
+      <source file='/var/lib/libvirt/images/backendplugintester-data.qcow2'/>
+      <target dev='vdd' bus='virtio'/>
+      <serial>vault_vol</serial>
+      <address type='ccw' cssid='0xfe' ssid='0x0' devno='0x0003'/>
+    </disk>
+    <controller type='pci' index='0' model='pci-root'/>
+    <interface type='network'>
+      <mac address='52:54:00:e9:77:f8'/>
+      <source network='testnetback'/>
+      <model type='virtio'/>
+      <driver name='vhost' iommu='on'/>
+      <address type='ccw' cssid='0xfe' ssid='0x0' devno='0x0007'/>
+    </interface>
+    <hostdev mode='subsystem'  type='mdev' managed='no' model='vfio-ap'>
+      <source>
+          <address uuid='977152a7-1abc-43d6-bf23-01b62c73f527' />
+      </source>
+    </hostdev>
+    <console type='pty'>
+      <target type='sclp' port='0'/>
+    </console>
+    <audio id='1' type='none'/>
+    <memballoon model='none'/>
+    <panic model='s390'/>
+  </devices>
+</domain>
+
