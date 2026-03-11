@@ -1,6 +1,6 @@
 # OSO TESTER
 
-Your way to IBM Hyper Protect Offline Signing Orchestrator
+Your way to IBM Hyper Protect Offline Signing Orchestrator.
 
 ## OSO Tester HOWTO 
  
@@ -56,3 +56,8 @@ Modify your OSO3 IP address of this example
 iptables -t nat -A PREROUTING -d 129.40.110.4 -p tcp --dport 9876  -j DNAT --to-destination 192.168.96.21:9876
 iptables -t nat -A POSTROUTING -d 192.168.96.21 -p tcp --dport 9876  -j MASQUERADE
 ```
+### hpcr version
+
+copy the qcow2 hpcr image in install your hpcr in `/var/lib/libvirt/images/oso/hpcr.2.2.3.1`
+
+`testerdata/domain_front.xml` and `testerdata/domain_back.xml` must be updated if you copy as another filename.
