@@ -95,13 +95,6 @@ rm ./o.$$
 
 ENV=`pwd`/$HPVSNAME.env.yml
 
-if [[ !  -f $2 ]]
-then
-	echo "Missing crypto passthough config, exiting"
-	exit 1
-fi
-
-cat $2 $LOCAL_PLAY/env_back.tpl > $LOCAL_PLAY/env_back_crypto.tpl
 
 envsubst < $LOCAL_PLAY/env_back_crypto.tpl > $ENV
 sed -i '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/ s/^/      /' $ENV
