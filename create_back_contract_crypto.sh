@@ -95,7 +95,6 @@ rm ./o.$$
 
 ENV=`pwd`/$HPVSNAME.env.yml
 
-
 envsubst < $LOCAL_PLAY/env_back_crypto.tpl > $ENV
 sed -i '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/ s/^/      /' $ENV
 sed -i '/-----BEGIN PRIVATE KEY-----/,/-----END PRIVATE KEY-----/ s/^/      /' $ENV
