@@ -1,6 +1,6 @@
 #!/bin/bash
 IP=$(virsh net-dhcp-leases  testnetfront | awk '/frontendplugintest/ { print $5 }' | tail -n 1 | awk -F/ '{print $1}')
-IP2=$(virsh net-dhcp-leases  testnetback | awk '/backendplugintest/ { print $5 }' | tail -n 1 | awk -F/ '{print $1}')
+IP2=$(virsh net-dhcp-leases  testnetback | awk '/backend.*plugintest/ { print $5 }' | tail -n 1 | awk -F/ '{print $1}')
 # Certificates
 
 CERT="testerdata/user.crt"
