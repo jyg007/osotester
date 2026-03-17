@@ -24,5 +24,4 @@ $APPCRT
     certs__ca: | 
 $OSOCA
     CONFIRMATION_FINGERPRINT:  ""
-    mode: "frontend"
 type: env

@@ -37,7 +37,6 @@ volumes:
   vault_vol:
     seed: "hello"
 env:
-    mode: frontend
     PORT: "4000"
     certs__app_key: |
 $APPKEY
@@ -46,5 +45,5 @@ $APPCRT
     certs__ca: | 
 $OSOCA
     BRIDGE_FINGERPRINT:  ""
-    mode: "backend"
+    mode: backend
 type: env
