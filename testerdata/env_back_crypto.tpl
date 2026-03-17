@@ -45,5 +45,6 @@ $APPKEY
 $APPCRT
     certs__ca: | 
 $OSOCA
-    CONFIRMATION_FINGERPRINT:  ""
+    BRIDGE_FINGERPRINT:  ""
+    mode: "backend"
 type: env
