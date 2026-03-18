@@ -92,7 +92,10 @@ while true; do
     echo
     case "$choice" in
         f)
-            STATUS_JSON=$(curl -sk --cert "$CERT" --key "$KEY" "$URL/status")
+            STATUS_JSON=$(curl -sSk --cert "$CERT" --key "$KEY" "$URL/status")
+	    if [ $? -ne 0 ]; then
+		continue
+	    fi
 	    if validate_component_status_string "$STATUS_JSON"; then
 		    echo "Status endpoint returned valid JSON ✅"
 	    else
@@ -101,7 +104,10 @@ while true; do
 	    echo $STATUS_JSON | jq
             ;;
         b)
-            STATUS_JSON=$(curl -sk --cert "$CERT" --key "$KEY" "$URL2/status")
+            STATUS_JSON=$(curl -sSk --cert "$CERT" --key "$KEY" "$URL2/status")
+	    if [ $? -ne 0 ]; then
+		continue
+	    fi
 	    if validate_component_status_string "$STATUS_JSON"; then
 		    echo "Status endpoint returned valid JSON ✅"
 	    else
@@ -110,25 +116,39 @@ while true; do
 	    echo $STATUS_JSON | jq
             ;;
         1)
-            curl -sk --cert "$CERT" --key "$KEY" -o OSO_pre_queue "$URL/documents "
+	    [ -f OSO_pre_queue ] && rm -f OSO_pre_queue
+            curl -sSk --cert "$CERT" --key "$KEY" -o OSO_pre_queue "$URL/documents "
+	    if [ $? -ne 0 ]; then
+		continue
+	    fi
 	    validate_document_list OSO_pre_queue
             cat OSO_pre_queue | jq
             echo
             ;;
         2)
-            curl -sk -X POST --cert "$CERT" --key "$KEY" "$URL2/documents" -d@OSO_pre_queue
+            curl -sSk -X POST --cert "$CERT" --key "$KEY" "$URL2/documents" -d@OSO_pre_queue
             echo "Status $?"
+	    if [ $? -ne 0 ]; then
+		echo "Call failed"
+	    fi
             ;;
         3)
-            curl -sk --cert "$CERT" --key "$KEY" -o OSO_post_queue "$URL2/documents"
+	    [ -f OSO_post_queue ] && rm -f OSO_post_queue
+            curl -sSk --cert "$CERT" --key "$KEY" -o OSO_post_queue "$URL2/documents"
+	    if [ $? -ne 0 ]; then
+		continue
+	    fi
             cat OSO_post_queue | jq
 	    validate_document_list OSO_post_queue
             echo
             ;;
         4)
-            curl -sk -X POST --cert "$CERT" --key "$KEY" "$URL/documents" -d@OSO_post_queue
-	    
+            curl -sSk -X POST --cert "$CERT" --key "$KEY" "$URL/documents" -d@OSO_post_queue
             echo "Status $?"
+	    if [ $? -ne 0 ]; then
+		echo "Call failed"
+	    fi
+	    
             ;;
         0)
             echo "Exiting..."
