@@ -1,6 +1,8 @@
 # OSO TESTER
 
 Your way to IBM Hyper Protect Offline Signing Orchestrator.
+OSO tester will allow you to startup your frontendplugin and backendplugin using their contract file for easy testing. 
+Consider using it in LPAR1 or any Linux LPAR.  Edit `terraform.tfvars` to specify rsyslog, registry and when needed crypto passthrough configuration of your local environment.
 
 ## OSO Tester HOWTO 
  
