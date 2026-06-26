@@ -14,9 +14,6 @@ $SYSLOG12_SERVER_CERT
 $SYSLOG12_CLIENT_CERT
     key: |
 $SYSLOG12_CLIENT_KEY
-volumes:
-  vault_vol:
-    seed: "hello1hello2hello3"
 env:
     PORT: "4000"
     certs__app_key: |
